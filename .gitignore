@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual Environment
+my-venv/
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Video files (may want to exclude large video files from git)
+videos/*.mp4
+videos/*.avi
+videos/*.mov
+# But keep the directory
+!videos/.gitkeep
+
+# Logs
+*.log
+
+# Test files
+test_*.py
+*_test.py
