@@ -5,40 +5,78 @@ An interactive video playback system that responds to touch inputs (Makey Makey)
 ## Features
 
 - **Event-Driven Video Playback**: Touch triggers play videos from start to finish
-- **Automatic Screensaver**: Displays attractive idle screen after inactivity
+- **Random Background Images**: Displays random images from the `images/` folder when idle
+- **Automatic Screensaver**: Shows random images after inactivity period
 - **Fullscreen Display**: Immersive playback with aspect ratio preservation
 - **State Management**: Clean state machine handling transitions
 - **Modular Architecture**: Separation of concerns for easy maintenance
+- **Cross-Platform**: Runs on Arch Linux and macOS
 
 ## Requirements
 
 - Python 3.x
 - Virtual environment (included as `my-venv`)
 - Video files in supported formats (mp4, avi, mov)
+- Image files in supported formats (png, jpg, jpeg)
 - Display hardware (monitor or projector)
 - Optional: Makey Makey device (Phase 2)
 
+### System-Specific Requirements
+
+**Arch Linux:**
+- Python 3.x (install via: `sudo pacman -S python`)
+- No additional system packages required
+
+**macOS:**
+- Python 3.x (install via Homebrew: `brew install python`)
+
 ## Installation
 
-1. **Activate the virtual environment**:
+### First-Time Setup
+
+1. **Create virtual environment** (if not already present):
+   ```bash
+   python3 -m venv my-venv
+   ```
+
+2. **Activate the virtual environment**:
+
+   **Arch Linux / macOS:**
    ```bash
    source my-venv/bin/activate
    ```
 
-2. **Install dependencies**:
+3. **Install dependencies**:
    ```bash
    pip install -r requirements.txt
    ```
 
-3. **Add video files**:
+4. **Add video files**:
    - Place your video files in the `videos/` directory
    - Supported formats: `.mp4`, `.avi`, `.mov`
+
+5. **Add background images**:
+   - Place your image files in the `images/` directory
+   - Supported formats: `.png`, `.jpg`, `.jpeg`
+   - Images will be displayed randomly when no video is playing
 
 ## Usage
 
 ### Running the Application
 
+**Using the run script (recommended):**
 ```bash
+./run.sh
+```
+
+**Or manually:**
+```bash
+./my-venv/bin/python src/main.py
+```
+
+**Or with activated virtual environment:**
+```bash
+source my-venv/bin/activate
 cd src
 python main.py
 ```
@@ -50,8 +88,8 @@ python main.py
 
 ### Application States
 
-1. **IDLE**: Initial state, waiting for input
-2. **SCREENSAVER**: Displays "Touch to play..." after 10 seconds of inactivity
+1. **IDLE**: Initial state, waiting for input (displays random background image)
+2. **SCREENSAVER**: Displays random image after 10 seconds of inactivity
 3. **PLAYING**: Currently playing a video
 
 ## Configuration
@@ -59,6 +97,9 @@ python main.py
 Edit `src/config.py` to customize settings:
 
 - `VIDEOS_DIR`: Directory containing videos
+- `IMAGES_DIR`: Directory containing background images
+- `SUPPORTED_FORMATS`: Video file formats (`.mp4`, `.avi`, `.mov`)
+- `SUPPORTED_IMAGE_FORMATS`: Image file formats (`.jpg`, `.jpeg`, `.png`, `.bmp`, `.gif`)
 - `FULLSCREEN`: Enable/disable fullscreen mode
 - `SCREEN_WIDTH` / `SCREEN_HEIGHT`: Display resolution
 - `SCREENSAVER_TIMEOUT`: Seconds before screensaver activates
@@ -74,11 +115,14 @@ mar/
 │   ├── config.py            # Configuration settings
 │   ├── state.py             # State machine
 │   ├── video_manager.py     # Video file management
+│   ├── image_manager.py     # Image file management
 │   ├── input_handler.py     # Input detection
 │   └── display.py           # Display and rendering
 ├── videos/                   # Video files directory
+├── images/                   # Background images directory
 ├── my-venv/                  # Python virtual environment
 ├── requirements.txt          # Python dependencies
+├── run.sh                    # Convenience run script
 └── README.md                 # This file
 ```
 
@@ -87,8 +131,10 @@ mar/
 ### Phase 1: Spacebar Testing (Current)
 - ✅ Video playback triggered by spacebar
 - ✅ State management and transitions
-- ✅ Screensaver functionality
+- ✅ Random background images when idle
+- ✅ Screensaver with random images
 - ✅ OpenCV-based video rendering
+- ✅ Pillow-based image loading for cross-platform compatibility
 
 ### Phase 2: Makey Makey Integration (Future)
 - Replace spacebar with Makey Makey touch detection
@@ -136,10 +182,22 @@ wget https://example.com/test-video.mp4
 - Check that videos have supported extensions (.mp4, .avi, .mov)
 - Verify file permissions allow reading
 
+### No Images Found / Black Screen When Idle
+- Ensure image files are in the `images/` directory
+- Check that images have supported extensions (.png, .jpg, .jpeg)
+- Verify file permissions allow reading
+- The application will show text "Touch to play..." if no images are available
+
 ### Display Issues
 - Try disabling fullscreen in `config.py` (set `FULLSCREEN = False`)
 - Adjust `SCREEN_WIDTH` and `SCREEN_HEIGHT` to match your display
 - Check that your system supports the required resolution
+
+### Image Loading Errors
+- **"File is not a Windows BMP file"**: This error is resolved by using Pillow (PIL) library
+- Ensure Pillow is installed in your virtual environment: `./my-venv/bin/pip install Pillow`
+- Check that image files are valid (try opening them with an image viewer)
+- Some exotic PNG formats may not be supported - try converting to standard RGB PNG
 
 ### Performance Issues
 - Reduce video resolution for smoother playback

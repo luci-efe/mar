@@ -12,6 +12,7 @@ import pygame
 from config import FPS, SCREENSAVER_TIMEOUT
 from state import AppState, StateManager
 from video_manager import VideoManager
+from image_manager import ImageManager
 from input_handler import InputHandler
 from display import Display
 
@@ -29,6 +30,7 @@ class VideoPlaybackApp:
         # Initialize components
         self.state_manager = StateManager(AppState.IDLE)
         self.video_manager = VideoManager()
+        self.image_manager = ImageManager()
         self.input_handler = InputHandler()
         self.display = Display()
 
@@ -74,6 +76,12 @@ class VideoPlaybackApp:
                 self.state_manager.transition_to(AppState.SCREENSAVER)
                 print("Screensaver activated")
 
+                # Load a random image for the screensaver
+                if self.image_manager.has_images():
+                    image_path = self.image_manager.get_random_image()
+                    if image_path:
+                        self.display.load_screensaver_image(image_path)
+
     def _update_video_playback(self) -> None:
         """Update video playback and handle completion."""
         if not self.state_manager.is_playing():
@@ -89,13 +97,19 @@ class VideoPlaybackApp:
             self.state_manager.transition_to(AppState.IDLE)
             self.last_activity_time = time.time()
 
+            # Load a new random image for the idle state
+            if self.image_manager.has_images():
+                image_path = self.image_manager.get_random_image()
+                if image_path:
+                    self.display.load_screensaver_image(image_path)
+
     def _render(self) -> None:
         """Render the current state to the display."""
         if self.state_manager.is_screensaver():
             self.display.render_screensaver()
         elif self.state_manager.is_idle():
-            self.display.clear()
-            pygame.display.flip()
+            # Show a random image when idle (if available)
+            self.display.render_screensaver()
         # Video rendering is handled in _update_video_playback
 
     def run(self) -> None:
@@ -103,6 +117,15 @@ class VideoPlaybackApp:
         if not self.video_manager.has_videos():
             print("Warning: No videos found. Add videos to the 'videos/' directory.")
             print("The application will continue running but cannot play videos.")
+
+        if not self.image_manager.has_images():
+            print("Warning: No images found. Add images to the 'images/' directory.")
+            print("The application will show text when idle instead of images.")
+        else:
+            # Load initial image for idle state
+            image_path = self.image_manager.get_random_image()
+            if image_path:
+                self.display.load_screensaver_image(image_path)
 
         self.running = True
         print("Application started. Press SPACE to trigger video playback.")

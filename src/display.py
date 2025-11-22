@@ -9,6 +9,7 @@ from typing import Optional, Tuple
 import cv2
 import numpy as np
 import pygame
+from PIL import Image
 
 from config import (
     FULLSCREEN,
@@ -75,6 +76,10 @@ class Display:
             print("Note: Font module not available (screensaver text will be disabled)")
             self.font = None
 
+        # Current screensaver image
+        self._current_image: Optional[pygame.Surface] = None
+        self._current_image_path: Optional[Path] = None
+
     def clear(self, color: Tuple[int, int, int] = BACKGROUND_COLOR) -> None:
         """
         Clear the screen with the specified color.
@@ -84,22 +89,85 @@ class Display:
         """
         self.screen.fill(color)
 
+    def load_screensaver_image(self, image_path: Optional[Path]) -> bool:
+        """
+        Load an image for the screensaver display.
+
+        Args:
+            image_path: Path to the image file, or None to clear the image.
+
+        Returns:
+            True if image loaded successfully, False otherwise.
+        """
+        if image_path is None:
+            self._current_image = None
+            self._current_image_path = None
+            return False
+
+        try:
+            # Load the image using PIL for better format support
+            pil_image = Image.open(image_path)
+
+            # Convert to RGB mode if necessary (handles RGBA, P, L, etc.)
+            if pil_image.mode != 'RGB':
+                pil_image = pil_image.convert('RGB')
+
+            # Get image dimensions
+            img_width, img_height = pil_image.size
+
+            # Calculate scaling to fit screen while maintaining aspect ratio
+            scale_width = self.width / img_width
+            scale_height = self.height / img_height
+            scale = min(scale_width, scale_height)
+
+            # Calculate new dimensions
+            new_width = int(img_width * scale)
+            new_height = int(img_height * scale)
+
+            # Resize the image using PIL for better quality
+            pil_image = pil_image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+
+            # Convert PIL image to pygame surface
+            mode = pil_image.mode
+            size = pil_image.size
+            data = pil_image.tobytes()
+
+            self._current_image = pygame.image.fromstring(data, size, mode)
+            self._current_image_path = image_path
+
+            print(f"Loaded screensaver image: {image_path.name}")
+            return True
+
+        except Exception as e:
+            print(f"Error loading image {image_path}: {e}")
+            self._current_image = None
+            self._current_image_path = None
+            return False
+
     def render_screensaver(self) -> None:
         """
         Render the screensaver display.
-        Shows text in the center of the screen (if font available).
+        Shows an image (if available) or text in the center of the screen.
         """
         self.clear()
 
-        # Render text if font is available
-        if self.font:
-            text_surface = self.font.render(
-                SCREENSAVER_TEXT, True, SCREENSAVER_TEXT_COLOR
-            )
-            text_rect = text_surface.get_rect(
+        # Render image if available
+        if self._current_image is not None:
+            # Calculate position to center the image
+            img_rect = self._current_image.get_rect(
                 center=(self.width // 2, self.height // 2)
             )
-            self.screen.blit(text_surface, text_rect)
+            self.screen.blit(self._current_image, img_rect)
+        else:
+            # Fallback: Render text if font is available
+            if self.font:
+                text_surface = self.font.render(
+                    SCREENSAVER_TEXT, True, SCREENSAVER_TEXT_COLOR
+                )
+                text_rect = text_surface.get_rect(
+                    center=(self.width // 2, self.height // 2)
+                )
+                self.screen.blit(text_surface, text_rect)
 
         pygame.display.flip()
 

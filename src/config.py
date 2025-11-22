@@ -13,6 +13,10 @@ PROJECT_ROOT = Path(__file__).parent.parent
 VIDEOS_DIR = PROJECT_ROOT / "videos"
 SUPPORTED_FORMATS = (".mp4", ".avi", ".mov")
 
+# Image settings
+IMAGES_DIR = PROJECT_ROOT / "images"
+SUPPORTED_IMAGE_FORMATS = (".jpg", ".jpeg", ".png", ".bmp", ".gif")
+
 # Display settings
 FULLSCREEN = True
 SCREEN_WIDTH = 1920
